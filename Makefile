@@ -78,10 +78,13 @@ init-html: ## init index.html
 
 add-scripts: ## add scripts to package.json
 	@echo "Adding scripts to package.json..."
-	jq '.scripts += {"build:css": "postcss ./$(subst ",,$(PROJECT_NAME))/src/assets/css/tailwind.css -o ./$(subst ",,$(PROJECT_NAME))/src/dist/css/style.css"}' package.json > package.json.tmp
-	mv package.json.tmp package.json
-	jq '.scripts += {"watch:css": "postcss ./$(subst ",,$(PROJECT_NAME))/src/assets/css/tailwind.css -o ./$(subst ",,$(PROJECT_NAME))/src/dist/css/style.css -w"}' package.json > package.json.tmp
-	mv package.json.tmp package.json
+	@node -e "const fs = require('fs'); \
+	          const path = './package.json'; \
+	          const packageJson = JSON.parse(fs.readFileSync(path, 'utf8')); \
+	          packageJson.scripts['build:css'] = 'postcss ./' + process.argv[1] + '/src/assets/css/tailwind.css -o ./' + process.argv[1] + '/src/dist/css/style.css'; \
+	          packageJson.scripts['watch:css'] = 'postcss ./' + process.argv[1] + '/src/assets/css/tailwind.css -o ./' + process.argv[1] + '/src/dist/css/style.css -w'; \
+	          fs.writeFileSync(path, JSON.stringify(packageJson, null, 2));" $(subst ",,$(PROJECT_NAME))
+
 
 init-config: init-tailwind.config init-postcss.config ## init config files
 
